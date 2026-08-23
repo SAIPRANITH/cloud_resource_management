@@ -1,0 +1,207 @@
+import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
+import {
+  Activity, Cpu, HardDrive, Wifi, Server, RefreshCw, CheckCircle2, AlertTriangle
+} from 'lucide-react';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+} from 'recharts';
+
+export default function Monitoring() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [data, setData] = useState(null);
+
+  const fetchTelemetry = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_URL}/dashboard`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setData(res.data);
+    } catch (err) {
+      console.error('Telemetry fetch failed', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [user.token]);
+
+  useEffect(() => {
+    fetchTelemetry();
+  }, [fetchTelemetry]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchTelemetry();
+  };
+
+  const nodes = [
+    { name: 'us-east-1a (Master)', status: 'Optimal', cpu: 32, ram: 58, uptime: '99.99%', load: '1.24' },
+    { name: 'us-east-1b (Worker)', status: 'Optimal', cpu: 45, ram: 62, uptime: '99.98%', load: '1.85' },
+    { name: 'eu-west-1a (Worker)', status: 'Optimal', cpu: 28, ram: 41, uptime: '99.95%', load: '0.92' },
+    { name: 'ap-south-1a (DB Node)', status: 'Warning', cpu: 78, ram: 84, uptime: '99.90%', load: '3.10' },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64 gap-3 text-gray-400">
+        <Activity className="w-6 h-6 animate-pulse text-indigo-500" />
+        Loading telemetry data...
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 min-w-0">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+            <span className="p-2 rounded-xl bg-indigo-500/10">
+              <Activity className="w-7 h-7 text-indigo-400" />
+            </span>
+            Real-Time Cluster Telemetry
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1 ml-1">
+            Live metric streams across compute nodes, network bandwidth, and memory allocation.
+          </p>
+        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="px-4 py-2 rounded-xl bg-muted border border-border hover:bg-muted/80 font-medium text-sm text-foreground transition-all flex items-center gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-indigo-400' : ''}`} />
+          {refreshing ? 'Refreshing...' : 'Refresh Metrics'}
+        </button>
+      </div>
+
+      {/* Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Avg CPU Load</span>
+            <Cpu className="w-5 h-5 text-indigo-400" />
+          </div>
+          <p className="text-3xl font-extrabold text-foreground">42.8%</p>
+          <div className="w-full bg-muted h-2 rounded-full mt-3 overflow-hidden">
+            <div className="bg-indigo-500 h-full rounded-full" style={{ width: '42.8%' }} />
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Memory Allocated</span>
+            <HardDrive className="w-5 h-5 text-emerald-400" />
+          </div>
+          <p className="text-3xl font-extrabold text-foreground">61.2%</p>
+          <div className="w-full bg-muted h-2 rounded-full mt-3 overflow-hidden">
+            <div className="bg-emerald-500 h-full rounded-full" style={{ width: '61.2%' }} />
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Network Throughput</span>
+            <Wifi className="w-5 h-5 text-blue-400" />
+          </div>
+          <p className="text-3xl font-extrabold text-foreground">1.24 GB/s</p>
+          <p className="text-xs text-emerald-400 mt-2 font-medium">↑ 4.2% from last hour</p>
+        </div>
+
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Cluster Health</span>
+            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          </div>
+          <p className="text-3xl font-extrabold text-emerald-400">99.98%</p>
+          <p className="text-xs text-muted-foreground mt-2">Zero unhandled outages</p>
+        </div>
+      </div>
+
+      {/* Main Performance Chart */}
+      <div className="bg-card border border-border rounded-2xl p-6 min-w-0">
+        <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+          <Cpu className="w-5 h-5 text-indigo-400" />
+          24-Hour Workload Telemetry
+        </h2>
+        <div style={{ width: '100%', height: 280 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data?.metrics || []} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="monCpu" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.35}/>
+                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="monRam" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.35}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="name" stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3f3f46" opacity={0.2} />
+              <Tooltip
+                contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '8px', fontSize: '12px' }}
+              />
+              <Legend verticalAlign="top" height={36} />
+              <Area type="monotone" dataKey="cpu" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#monCpu)" name="CPU Load (%)" />
+              <Area type="monotone" dataKey="ram" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#monRam)" name="RAM Load (%)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Cluster Nodes Table */}
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-border">
+          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+            <Server className="w-5 h-5 text-muted-foreground" />
+            Node Infrastructure Telemetry
+          </h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 border-b border-border text-xs text-muted-foreground uppercase font-semibold">
+              <tr>
+                <th className="px-6 py-3.5 text-left">Node Identifier</th>
+                <th className="px-6 py-3.5 text-left">Status</th>
+                <th className="px-6 py-3.5 text-center">CPU Load</th>
+                <th className="px-6 py-3.5 text-center">RAM Used</th>
+                <th className="px-6 py-3.5 text-center">System Load</th>
+                <th className="px-6 py-3.5 text-right">Uptime</th>
+              </tr>
+            </thead>
+            <tbody>
+              {nodes.map((node, i) => (
+                <tr key={i} className="border-b border-border last:border-0 hover:bg-muted/40 transition-colors">
+                  <td className="px-6 py-4 font-semibold text-foreground flex items-center gap-2">
+                    <Server className="w-4 h-4 text-indigo-400" />
+                    {node.name}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border inline-flex items-center gap-1 ${
+                      node.status === 'Optimal'
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                    }`}>
+                      {node.status === 'Optimal' ? <CheckCircle2 className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
+                      {node.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center font-mono">{node.cpu}%</td>
+                  <td className="px-6 py-4 text-center font-mono">{node.ram}%</td>
+                  <td className="px-6 py-4 text-center font-mono text-muted-foreground">{node.load}</td>
+                  <td className="px-6 py-4 text-right font-medium text-emerald-400">{node.uptime}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userRoles UserRole[]
+  sessions  Session[]
+  projects  Project[]
+  bills     Bill[]
+  payments  Payment[]
+  userPlans UserPlan[]
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g., Admin, Customer, Finance
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userRoles UserRole[]
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  device    String?
+  ipAddress String?
+  loginTime DateTime @default(now())
+  logoutTime DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  status      String   @default("active") // active, inactive
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user               User                 @relation(fields: [userId], references: [id])
+  resourceAllocations ResourceAllocation[]
+}
+
+model Resource {
+  id       String   @id @default(uuid())
+  name     String
+  type     String   // VM, Storage, DB, LB
+  cpu      Int?
+  ram      Int?
+  disk     Int?
+  region   String
+  baseCost Float
+  status   String   @default("available") // available, running, stopped
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resourceAllocations ResourceAllocation[]
+}
+
+model ResourceAllocation {
+  id         String   @id @default(uuid())
+  projectId  String
+  resourceId String
+  startDate  DateTime @default(now())
+  endDate    DateTime?
+  status     String   @default("active") // active, terminated
+
+  project  Project  @relation(fields: [projectId], references: [id])
+  resource Resource @relation(fields: [resourceId], references: [id])
+  usageRecords UsageRecord[]
+}
+
+model UsageRecord {
+  id             String   @id @default(uuid())
+  allocationId   String
+  cpuUsage       Float?   // percentage
+  memoryUsage    Float?   // percentage
+  storageUsed    Float?   // in GB
+  bandwidthUsed  Float?   // in GB
+  startTime      DateTime
+  endTime        DateTime
+  createdAt      DateTime @default(now())
+
+  allocation ResourceAllocation @relation(fields: [allocationId], references: [id])
+}
+
+model PricingPlan {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  monthlyCost Float
+  features    String? // Stringified JSON or comma-separated
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userPlans UserPlan[]
+}
+
+model UserPlan {
+  id        String   @id @default(uuid())
+  userId    String
+  planId    String
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  status    String   @default("active")
+
+  user User        @relation(fields: [userId], references: [id])
+  plan PricingPlan @relation(fields: [planId], references: [id])
+}
+
+model Bill {
+  id            String   @id @default(uuid())
+  userId        String
+  totalAmount   Float
+  taxes         Float
+  billingMonth  String   // e.g., "2026-04"
+  status        String   @default("pending") // pending, paid, overdue
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id])
+  billItems BillItem[]
+  payments  Payment[]
+}
+
+model BillItem {
+  id          String   @id @default(uuid())
+  billId      String
+  description String
+  amount      Float
+  createdAt   DateTime @default(now())
+
+  bill Bill @relation(fields: [billId], references: [id])
+}
+
+model Payment {
+  id                   String   @id @default(uuid())
+  billId               String?
+  userId               String
+  amount               Float
+  method               String   // UPI, Credit Card, Net Banking
+  transactionReference String   @unique
+  status               String   @default("success") // success, failed, pending
+  paymentDate          DateTime @default(now())
+
+  bill Bill? @relation(fields: [billId], references: [id])
+  user User  @relation(fields: [userId], references: [id])
+}
+
+model Metric {
+  id           String   @id @default(uuid())
+  resourceType String
+  metricName   String   // cpu_trend, ram_trend, disk_usage, network_usage
+  value        Float
+  unit         String
+  timestamp    DateTime @default(now())
+}
+
+model Prediction {
+  id               String   @id @default(uuid())
+  predictionTarget String   // e.g., "next_month_cost", "usage_spike"
+  predictedValue   Float
+  confidence       Float    // percentage
+  details          String?
+  createdAt        DateTime @default(now())
+}
+
+model Alert {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  severity  String   // low, medium, high
+  status    String   @default("unread") // unread, read
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?
+  title     String
+  message   String
+  status    String   @default("unread") // unread, read
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String   // e.g., login, project_created, resource_deleted
+  module    String   // e.g., Auth, Project, Resource, Billing
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
