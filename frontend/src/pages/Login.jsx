@@ -1,214 +1,182 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
-import { Cloud, Loader2, AlertCircle, Eye, EyeOff, Zap, Shield, CreditCard, Check } from 'lucide-react';
-import axios from 'axios';
-
-const DEMO_ACCOUNTS = [
-  { label: 'Admin',    email: 'admin@cloud.local',  password: 'password123', badge: 'ADMIN',    color: 'border-violet-500/30 text-violet-400 hover:bg-violet-500/10' },
-  { label: 'Customer', email: 'demo@cloud.local',   password: 'password123', badge: 'CUSTOMER', color: 'border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10' },
-];
+import { Cloud, Lock, Mail, Loader2, AlertCircle, ArrowRight, Server, Shield, Activity, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Login() {
-  const [email, setEmail]       = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPw, setShowPw]     = useState(false);
-  const [error, setError]       = useState('');
-  const [loading, setLoading]   = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const { login }  = useAuth();
-  const navigate   = useNavigate();
-
-  const doLogin = async (em, pw) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, {
-        email: em || email,
-        password: pw || password,
-      });
-      const userData = { ...res.data, roles: res.data.roles || ['Customer'] };
-      login(userData);
-      // Redirect admins to admin panel, customers to dashboard
-      navigate(userData.roles.includes('Admin') ? '/admin' : '/dashboard');
+      const res = await axios.post(`${API_URL}/auth/login`, { email, password });
+      login(res.data.token, res.data.user);
+      navigate(res.data.user.role === 'Admin' ? '/admin' : '/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = (e) => { e.preventDefault(); doLogin(); };
-
-  const quickFill = (em, pw) => {
-    setEmail(em);
-    setPassword(pw);
-    setError('');
-  };
+  const quickFill = (e, p) => { setEmail(e); setPassword(p); };
 
   return (
-    <div className="min-h-screen w-full lg:grid lg:grid-cols-2 bg-background selection:bg-indigo-500/30">
-      
-      {/* ─── Left Column: Branding & Features (Hidden on mobile) ─── */}
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-muted/30 relative overflow-hidden border-r border-border">
-        {/* Abstract Dark Ambient Glows */}
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] mix-blend-screen animate-pulse duration-10000" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-violet-600/20 rounded-full blur-[150px] mix-blend-screen" />
-        
-        {/* Logo */}
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/20">
-            <Cloud className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-background flex">
+      {/* Left side - Dark/Brand side */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-indigo-950 overflow-hidden flex-col justify-between p-12">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/40 via-transparent to-transparent"></div>
+        <div className="absolute -bottom-48 -right-48 w-96 h-96 bg-indigo-500 rounded-full blur-[100px] opacity-30"></div>
+        <div className="absolute -top-48 -left-48 w-96 h-96 bg-cyan-500 rounded-full blur-[120px] opacity-20"></div>
+
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative z-10 flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+          <div className="bg-indigo-500 p-2 rounded-xl">
+            <Cloud className="w-6 h-6 text-white" />
           </div>
-          <span className="text-2xl font-bold tracking-tight text-foreground">VIT Cloud</span>
-        </div>
+          <span className="text-2xl font-bold tracking-tight text-white">VIT Cloud</span>
+        </motion.div>
 
-        {/* Hero Text & Features */}
-        <div className="relative z-10 max-w-lg mt-12 mb-auto pt-24">
-          <h2 className="text-5xl font-extrabold tracking-tight text-foreground mb-6 leading-[1.1]">
-            Manage infrastructure with <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">unprecedented</span> control.
-          </h2>
-          <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
-            Provision, monitor, and scale your applications globally in seconds. VIT Cloud provides a comprehensive suite of cloud computing tools designed for the modern web.
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.7 }} className="relative z-10 max-w-md">
+          <h1 className="text-4xl font-extrabold text-white mb-4 leading-tight">Secure Cloud Management Infrastructure</h1>
+          <p className="text-indigo-200 text-lg mb-8 leading-relaxed">
+            Provision scalable compute resources, monitor high-fidelity telemetry, and manage RBAC policies from a unified dashboard.
           </p>
-          
-          <ul className="space-y-5 mb-8">
+          <div className="space-y-4">
             {[
-              { text: 'Real-time resource provisioning & scaling', icon: Zap, color: 'text-amber-400', bg: 'bg-amber-400/10' },
-              { text: 'Granular role-based access control', icon: Shield, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-              { text: 'Automated exact-usage cloud billing', icon: CreditCard, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-            ].map((feat, i) => (
-              <li key={i} className="flex items-center gap-4 text-foreground font-medium text-base">
-                <div className={`p-2 rounded-xl ${feat.bg} ${feat.color} shadow-sm border border-border/50`}>
-                  <feat.icon className="w-5 h-5" />
-                </div>
-                {feat.text}
-              </li>
+              { text: "Enterprise-grade VM provisioning", icon: Server },
+              { text: "Automated real-time cost tracking", icon: Activity },
+              { text: "Zero-trust security architecture", icon: Shield }
+            ].map((item, i) => (
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + (i * 0.1) }} key={i} className="flex items-center gap-3 text-indigo-100 bg-indigo-900/50 p-3 rounded-xl border border-indigo-700/50 backdrop-blur-sm">
+                <item.icon className="w-5 h-5 text-indigo-400" />
+                <span className="font-medium">{item.text}</span>
+              </motion.div>
             ))}
-          </ul>
-        </div>
+          </div>
+        </motion.div>
         
-
+        <div className="relative z-10 text-indigo-400 text-sm font-medium flex items-center gap-2">
+          <Activity className="w-4 h-4 animate-pulse" /> Systems Operational
+        </div>
       </div>
 
-      {/* ─── Right Column: Form ─── */}
-      <div className="flex items-center justify-center p-6 sm:p-12 relative overflow-hidden bg-background/50">
-        
-        {/* Very subtle glow behind the form for mobile fallback */}
-        <div className="absolute lg:hidden top-1/2 left-1/2 w-[300px] h-[300px] bg-indigo-600/10 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2" />
-        
-        <div className="w-full max-w-[420px] relative z-10">
+      {/* Right side - Form */}
+      <div className="flex-1 flex flex-col justify-center items-center p-8 sm:p-12 lg:p-24 relative overflow-hidden">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} className="w-full max-w-md relative z-10">
           
-          {/* Mobile Logo Fallback */}
-          <div className="flex lg:hidden flex-col items-center mb-8 text-center">
-             <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/20 mb-4 tracking-tight">
-               <Cloud className="w-8 h-8 text-white" />
-             </div>
-             <h1 className="text-3xl font-extrabold text-foreground mb-1">VIT Cloud</h1>
-             <p className="text-muted-foreground text-sm">Sign in to your account</p>
-          </div>
-
-          <div className="hidden lg:flex flex-col space-y-1 text-left mb-8">
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Welcome back</h1>
-            <p className="text-sm text-muted-foreground">Sign in to your VIT Cloud account to continue.</p>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="flex items-start gap-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm p-3 rounded-xl mb-6 shadow-sm shadow-rose-500/5 animate-in fade-in slide-in-from-top-1">
-              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-              {error}
+          <div className="lg:hidden flex items-center justify-center gap-2 mb-10">
+            <div className="bg-indigo-600 p-2 rounded-xl">
+              <Cloud className="w-6 h-6 text-white" />
             </div>
+            <span className="text-2xl font-bold tracking-tight text-foreground">VIT Cloud</span>
+          </div>
+
+          <div className="text-center lg:text-left mb-8">
+            <h2 className="text-3xl font-extrabold text-foreground mb-2 tracking-tight">Welcome back</h2>
+            <p className="text-muted-foreground">Please enter your details to sign in.</p>
+          </div>
+
+          {error && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm p-4 rounded-xl mb-6 shadow-sm">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <p>{error}</p>
+            </motion.div>
           )}
 
-          {/* Glassmorphism Form Card */}
-          <div className="bg-card/40 backdrop-blur-2xl border border-border/60 rounded-3xl shadow-2xl p-6 sm:p-8">
-            
-            {/* Quick-fill demo buttons */}
-            <div className="mb-6">
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mb-3 px-1">Quick Sign In Demo</p>
-              <div className="grid grid-cols-2 gap-3">
-                {DEMO_ACCOUNTS.map(a => (
-                  <button
-                    key={a.label}
-                    type="button"
-                    onClick={() => quickFill(a.email, a.password)}
-                    className={`px-3 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-between shadow-sm bg-background/50 hover:scale-[1.02] ${a.color}`}
-                  >
-                    <span>{a.label}</span>
-                    <span className="text-[9px] opacity-70 px-1.5 py-0.5 rounded-md bg-white/5">{a.badge}</span>
-                  </button>
-                ))}
+          {/* Quick Demo Login */}
+          <div className="mb-6 grid grid-cols-2 gap-3">
+            <button onClick={() => quickFill('admin@cloud.local', 'password123')} type="button" className="group flex items-center justify-between p-3 rounded-xl border border-border bg-card hover:border-indigo-500/50 transition-all shadow-sm">
+              <div className="text-left">
+                <p className="text-xs font-bold text-foreground">Admin Demo</p>
+                <p className="text-[10px] text-muted-foreground">Full access</p>
               </div>
-            </div>
-
-            <div className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border/50" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+            </button>
+            <button onClick={() => quickFill('demo@cloud.local', 'password123')} type="button" className="group flex items-center justify-between p-3 rounded-xl border border-border bg-card hover:border-indigo-500/50 transition-all shadow-sm">
+              <div className="text-left">
+                <p className="text-xs font-bold text-foreground">Customer Demo</p>
+                <p className="text-[10px] text-muted-foreground">Standard</p>
               </div>
-              <div className="relative flex justify-center">
-                <span className="px-3 bg-transparent backdrop-blur-md text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">or use email</span>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="block text-sm font-semibold text-foreground px-1">Email Address</label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                    className="w-full h-11 px-4 rounded-xl border border-border/50 bg-background/50 hover:bg-background/80 focus:bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between px-1">
-                  <label className="block text-sm font-semibold text-foreground">Password</label>
-                  <a href="#" className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors">Forgot?</a>
-                </div>
-                <div className="relative">
-                  <input
-                    type={showPw ? 'text' : 'password'}
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    required
-                    className="w-full h-11 px-4 pr-11 rounded-xl border border-border/50 bg-background/50 hover:bg-background/80 focus:bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw(p => !p)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md"
-                  >
-                    {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full h-12 mt-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0"
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-                {loading ? 'Signing in...' : 'Sign In to VIT Cloud'}
-              </button>
-            </form>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+            </button>
           </div>
 
-          <p className="text-center text-sm text-muted-foreground mt-8">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border"></div></div>
+            <div className="relative flex justify-center"><span className="px-4 text-xs font-medium text-muted-foreground bg-background uppercase tracking-wider">or sign in with email</span></div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-muted-foreground/60 text-foreground shadow-sm"
+                  placeholder="name@company.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-semibold text-foreground">Password</label>
+                <a href="#" className="text-xs font-medium text-indigo-500 hover:text-indigo-600 transition-colors">Forgot password?</a>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-muted-foreground/60 text-foreground shadow-sm"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Authenticating...
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <p className="mt-8 text-center text-sm text-muted-foreground">
             Don't have an account?{' '}
-            <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-bold hover:underline transition-colors">
-              Create one free
+            <Link to="/register" className="font-semibold text-indigo-500 hover:text-indigo-600 transition-colors">
+              Create an account
             </Link>
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
