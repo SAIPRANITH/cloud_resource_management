@@ -89,11 +89,6 @@ export default function Landing() {
             animate="visible"
             className="max-w-4xl mx-auto"
           >
-            <motion.div variants={itemVariants} className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-neutral-300">
-              <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
-              VIT Cloud 2.0 is now live
-            </motion.div>
-            
             <motion.h1 variants={itemVariants} className="text-5xl lg:text-7xl font-bold tracking-tight mb-8">
               The Cloud Built for{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">

@@ -19,6 +19,7 @@ const Billing = React.lazy(() => import('./pages/Billing'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 const Monitoring = React.lazy(() => import('./pages/Monitoring'));
 const Alerts = React.lazy(() => import('./pages/Alerts'));
+const Contact = React.lazy(() => import('./pages/Contact'));
 
 const SplashLoadingScreen = () => {
   return (
@@ -89,6 +90,7 @@ const AnimatedRoutes = () => {
       <Routes location={location} key={location.pathname}>
         {/* Public */}
         <Route path="/"         element={<PageWrapper><Landing /></PageWrapper>} />
+        <Route path="/contact"  element={<PageWrapper><Contact /></PageWrapper>} />
         <Route path="/login"    element={<PageWrapper><Login /></PageWrapper>} />
         <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
 
