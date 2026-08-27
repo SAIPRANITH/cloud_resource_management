@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Cloud, Shield, Zap, Server, Activity, ArrowRight, BarChart3, Users, Lock, ChevronRight } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
 export default function Landing() {

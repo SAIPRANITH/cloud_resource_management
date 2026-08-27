@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 import { Cloud, Lock, Mail, Loader2, AlertCircle, ArrowRight, Server, Shield, Activity, ChevronRight } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
 export default function Login() {
