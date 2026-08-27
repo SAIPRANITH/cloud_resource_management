@@ -20,8 +20,9 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await axios.post(`${API_URL}/auth/login`, { email, password });
-      login(res.data.token, res.data.user);
-      navigate(res.data.user.role === 'Admin' ? '/admin' : '/dashboard');
+      const userData = { ...res.data, roles: res.data.roles || ['Customer'] };
+      login(userData);
+      navigate(userData.roles.includes('Admin') ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
