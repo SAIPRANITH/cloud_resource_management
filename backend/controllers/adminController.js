@@ -7,6 +7,11 @@ const prisma = new PrismaClient();
 const getAllUsersStats = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
+      where: {
+        NOT: {
+          userRoles: { some: { role: { name: 'Admin' } } }
+        }
+      },
       include: {
         userRoles: { include: { role: true } },
         projects: {
@@ -81,7 +86,9 @@ const getPlatformStats = async (req, res) => {
       activeAllocations,
       allBills
     ] = await Promise.all([
-      prisma.user.count(),
+      prisma.user.count({
+        where: { NOT: { userRoles: { some: { role: { name: 'Admin' } } } } }
+      }),
       prisma.project.count(),
       prisma.resource.count(),
       prisma.resourceAllocation.count({ where: { status: 'active' } }),
