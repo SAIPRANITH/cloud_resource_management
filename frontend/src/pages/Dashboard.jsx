@@ -4,6 +4,21 @@ import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 import { Users, Server, FolderGit2, Banknote, Bell, Cpu, Link, TrendingUp, AlertCircle } from 'lucide-react';
 import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+};
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -38,44 +53,59 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <motion.div 
+      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={itemVariants} className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, i) => (
-          <div key={i} className="bg-card border border-border p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+          <motion.div 
+            key={i} 
+            variants={itemVariants}
+            whileHover={{ y: -5, scale: 1.02 }}
+            className="bg-card/40 backdrop-blur-xl border border-white/10 p-6 rounded-xl shadow-lg hover:shadow-indigo-500/10 transition-all duration-300"
+          >
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-muted-foreground text-sm font-medium">{stat.name}</p>
-                <h3 className="text-3xl font-bold mt-2 text-foreground">{stat.value}</h3>
+                <h3 className="text-3xl font-bold mt-2 text-foreground drop-shadow-md">{stat.value}</h3>
               </div>
-              <div className={`p-3 rounded-lg bg-muted ${stat.color}`}>
+              <div className={`p-3 rounded-lg bg-white/5 backdrop-blur-md shadow-inner border border-white/5 ${stat.color}`}>
                 <stat.icon className="w-6 h-6" />
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         <div className="lg:col-span-2 space-y-6 min-w-0">
-          <div className="bg-card border border-border rounded-xl shadow-sm p-6 min-w-0">
+          <motion.div variants={itemVariants} className="bg-card/40 backdrop-blur-xl border border-white/10 rounded-xl shadow-lg p-6 min-w-0 hover:border-indigo-500/30 transition-colors duration-300">
             <div className="flex items-center gap-2 mb-6">
               <Cpu className="w-5 h-5 text-indigo-500" />
               <h2 className="text-xl font-bold text-foreground">Cluster Performance</h2>
             </div>
-            <div className="h-[300px] w-full">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="h-[300px] w-full"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data?.metrics || []} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorCpu" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.5}/>
                       <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                     </linearGradient>
                     <linearGradient id="colorRam" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.5}/>
                       <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
@@ -83,7 +113,7 @@ export default function Dashboard() {
                   <YAxis stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} tickFormatter={value => `${value}%`} />
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3f3f46" opacity={0.2} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '8px' }}
+                    contentStyle={{ backgroundColor: 'rgba(17, 24, 39, 0.8)', backdropFilter: 'blur(12px)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}
                     itemStyle={{ color: 'var(--foreground)' }}
                   />
                   <Legend verticalAlign="top" height={36} />
@@ -91,22 +121,27 @@ export default function Dashboard() {
                   <Area type="monotone" dataKey="ram" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorRam)" name="RAM Usage" />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
           
-          <div className="bg-card border border-border rounded-xl shadow-sm p-6 min-w-0">
+          <motion.div variants={itemVariants} className="bg-card/40 backdrop-blur-xl border border-white/10 rounded-xl shadow-lg p-6 min-w-0 hover:border-emerald-500/30 transition-colors duration-300">
             <div className="flex items-center gap-2 mb-6">
                <TrendingUp className="w-5 h-5 text-emerald-500" />
                <h2 className="text-xl font-bold text-foreground">Future Usage Forecast</h2>
             </div>
-            <div className="h-[250px] w-full">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+              className="h-[250px] w-full"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data?.predictions || []} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <XAxis dataKey="name" stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} tickFormatter={value => `${value}%`} />
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3f3f46" opacity={0.2} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '8px' }}
+                    contentStyle={{ backgroundColor: 'rgba(17, 24, 39, 0.8)', backdropFilter: 'blur(12px)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}
                     itemStyle={{ color: 'var(--foreground)' }}
                   />
                   <Legend verticalAlign="top" height={36} />
@@ -114,25 +149,31 @@ export default function Dashboard() {
                   <Line type="monotone" dataKey="predictedRam" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} name="Est RAM" />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl shadow-sm p-6 flex flex-col">
+        <motion.div variants={itemVariants} className="bg-card/40 backdrop-blur-xl border border-white/10 rounded-xl shadow-lg p-6 flex flex-col hover:border-rose-500/30 transition-colors duration-300">
           <div className="flex items-center justify-between mb-6">
              <div className="flex items-center gap-2">
                <Bell className="w-5 h-5 text-rose-500" />
                <h2 className="text-xl font-bold text-foreground">Recent Alerts</h2>
              </div>
              {data?.alerts?.length > 0 && (
-               <span className="px-2 py-1 bg-rose-500/10 text-rose-500 text-xs font-bold rounded-full">{data.alerts.length}</span>
+               <span className="px-2 py-1 bg-rose-500/20 text-rose-400 text-xs font-bold rounded-full border border-rose-500/30">{data.alerts.length}</span>
              )}
           </div>
           
           <div className="space-y-4 flex-1 overflow-y-auto pr-2">
             {data?.alerts?.length > 0 ? (
               data.alerts.map((alert, i) => (
-                <div key={i} className="flex gap-3 p-3 rounded-lg bg-background border border-border transition-colors hover:bg-muted/50 cursor-default">
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 + (i * 0.1) }}
+                  className="flex gap-3 p-3 rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm transition-all hover:bg-white/10 cursor-default hover:shadow-md"
+                >
                    <div className="mt-0.5">
                      <AlertCircle className="w-4 h-4 text-amber-500" />
                    </div>
@@ -140,18 +181,22 @@ export default function Dashboard() {
                      <p className="text-sm font-semibold text-foreground">{alert.title}</p>
                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{alert.message}</p>
                    </div>
-                </div>
+                </motion.div>
               ))
             ) : (
-              <div className="text-center py-12 text-muted-foreground border-2 border-dashed border-border rounded-xl">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12 text-muted-foreground border-2 border-dashed border-white/10 rounded-xl bg-white/5 backdrop-blur-sm"
+              >
                  <Bell className="w-8 h-8 mx-auto mb-3 opacity-20" />
                  <p className="text-sm font-medium">No active alerts</p>
                  <p className="text-xs opacity-70 mt-1">Your systems are clean.</p>
-              </div>
+              </motion.div>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

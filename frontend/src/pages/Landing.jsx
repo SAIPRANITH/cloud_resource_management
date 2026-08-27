@@ -1,4 +1,5 @@
 import React from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { Server, Activity, Shield, Zap, Lock, BarChart3, Cloud, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';

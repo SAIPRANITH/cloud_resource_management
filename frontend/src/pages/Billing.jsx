@@ -6,8 +6,23 @@ import {
   CreditCard, Download, CheckCircle, Clock, AlertCircle,
   Loader2, FileText, X, TrendingUp, IndianRupee, Receipt
 } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from 'framer-motion';
 
 const API = API_URL;
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 /* ─── Pay Modal ─── */
 function PayModal({ bill, onClose, onPaid, token }) {
@@ -34,21 +49,32 @@ function PayModal({ bill, onClose, onPaid, token }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#111827] border border-white/10 w-full max-w-md rounded-2xl shadow-2xl">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4"
+    >
+      <motion.div 
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
+        className="bg-[#111827]/90 border border-white/20 w-full max-w-md rounded-2xl shadow-2xl backdrop-blur-xl"
+      >
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <div>
             <h2 className="text-lg font-bold text-white">Pay Invoice</h2>
             <p className="text-sm text-gray-400 mt-0.5">Invoice #{bill.id.substring(0, 8).toUpperCase()}</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:bg-white/10 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="px-6 py-5 space-y-5">
           {/* Amount */}
-          <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 text-center">
+          <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-xl p-4 text-center backdrop-blur-sm">
             <p className="text-sm text-gray-400 mb-1">Amount Due</p>
             <p className="text-4xl font-extrabold text-white">₹{bill.totalAmount.toFixed(2)}</p>
             <p className="text-xs text-gray-500 mt-1">Billing Period: {bill.billingMonth}</p>
@@ -64,8 +90,8 @@ function PayModal({ bill, onClose, onPaid, token }) {
                   onClick={() => setMethod(m)}
                   className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
                     method === m
-                      ? 'border-indigo-500 bg-indigo-500/10 text-indigo-300'
-                      : 'border-white/8 bg-white/3 text-gray-400 hover:bg-white/6 hover:text-gray-200'
+                      ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.3)]'
+                      : 'border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-200'
                   }`}
                 >
                   {m}
@@ -75,28 +101,28 @@ function PayModal({ bill, onClose, onPaid, token }) {
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg px-3 py-2 text-sm">
+            <div className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-lg px-3 py-2 text-sm backdrop-blur-sm">
               <AlertCircle className="w-4 h-4 shrink-0" />
               {error}
             </div>
           )}
 
           <div className="flex gap-3 pt-2">
-            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg border border-white/10 text-gray-300 hover:bg-white/5 text-sm font-medium transition-colors">
+            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg border border-white/10 text-gray-300 hover:bg-white/10 text-sm font-medium transition-colors">
               Cancel
             </button>
             <button
               onClick={handlePay}
               disabled={saving}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold transition-all shadow-[0_0_15px_rgba(99,102,241,0.4)] flex items-center justify-center gap-2"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
               {saving ? 'Processing...' : `Pay ₹${bill.totalAmount.toFixed(2)}`}
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -230,81 +256,107 @@ export default function Billing() {
   const pendingCount   = bills.filter(b => b.status === 'pending').length;
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
-            <span className="p-2 rounded-xl bg-indigo-500/10">
+            <span className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-sm">
               <CreditCard className="w-7 h-7 text-indigo-400" />
             </span>
             Billing &amp; Invoices
           </h1>
           <p className="text-muted-foreground text-sm mt-1 ml-1">All invoices are computed based on actual resource usage duration.</p>
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={handleGenerateInvoice}
           disabled={generating}
-          className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold text-sm transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+          className="px-5 py-2.5 rounded-lg bg-indigo-600/90 hover:bg-indigo-500 backdrop-blur-md disabled:opacity-50 text-white font-semibold text-sm transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(99,102,241,0.3)] border border-indigo-500/50"
         >
           {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
           {generating ? 'Generating...' : 'Generate Invoice'}
-        </button>
+        </motion.button>
       </div>
 
       {/* Generation message */}
-      {genMsg && (
-        <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium ${
-          genMsg.startsWith('✅')
-            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-            : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
-        }`}>
-          <span>{genMsg}</span>
-          <button onClick={() => setGenMsg('')} className="ml-auto shrink-0 opacity-60 hover:opacity-100">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      <AnimatePresence>
+        {genMsg && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-md text-sm font-medium ${
+              genMsg.startsWith('✅')
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                : 'bg-rose-500/10 border-rose-500/30 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.15)]'
+            }`}
+          >
+            <span>{genMsg}</span>
+            <button onClick={() => setGenMsg('')} className="ml-auto shrink-0 opacity-60 hover:opacity-100">
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-500/20 relative overflow-hidden">
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+      >
+        <motion.div variants={itemVariants} whileHover={{ y: -5 }} className="bg-gradient-to-br from-indigo-600/90 to-violet-600/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 text-white shadow-lg shadow-indigo-500/20 relative overflow-hidden">
           <div className="relative z-10">
-            <p className="text-indigo-200 text-sm font-medium mb-1">Total Pending</p>
-            <p className="text-3xl font-extrabold">₹{pendingTotal.toFixed(2)}</p>
-            <p className="text-indigo-300 text-xs mt-1">{pendingCount} invoice{pendingCount !== 1 ? 's' : ''} due</p>
+            <p className="text-indigo-100 text-sm font-medium mb-1 drop-shadow-md">Total Pending</p>
+            <p className="text-3xl font-extrabold drop-shadow-lg">₹{pendingTotal.toFixed(2)}</p>
+            <p className="text-indigo-200 text-xs mt-1 drop-shadow-md">{pendingCount} invoice{pendingCount !== 1 ? 's' : ''} due</p>
           </div>
           <IndianRupee className="absolute -right-3 -bottom-3 w-24 h-24 text-white/10" />
-        </div>
+        </motion.div>
 
-        <div className="bg-card border border-border rounded-2xl p-6">
+        <motion.div variants={itemVariants} whileHover={{ y: -5 }} className="bg-card/60 backdrop-blur-md border border-border rounded-2xl p-6 shadow-xl">
           <div className="flex items-center gap-2 mb-1">
             <CheckCircle className="w-4 h-4 text-emerald-400" />
             <p className="text-muted-foreground text-sm font-medium">Total Paid</p>
           </div>
           <p className="text-2xl font-bold text-foreground">₹{paidTotal.toFixed(2)}</p>
           <p className="text-muted-foreground text-xs mt-1">{bills.filter(b => b.status === 'paid').length} paid invoices</p>
-        </div>
+        </motion.div>
 
-        <div className="bg-card border border-border rounded-2xl p-6">
+        <motion.div variants={itemVariants} whileHover={{ y: -5 }} className="bg-card/60 backdrop-blur-md border border-border rounded-2xl p-6 shadow-xl">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="w-4 h-4 text-amber-400" />
             <p className="text-muted-foreground text-sm font-medium">Total Invoiced</p>
           </div>
           <p className="text-2xl font-bold text-foreground">₹{(pendingTotal + paidTotal).toFixed(2)}</p>
           <p className="text-muted-foreground text-xs mt-1">{bills.length} total invoice{bills.length !== 1 ? 's' : ''}</p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Invoice List */}
-      <div>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
         <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
           <FileText className="w-5 h-5 text-muted-foreground" />
           Invoice History
         </h2>
 
         {bills.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 bg-card rounded-2xl border border-border">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center justify-center py-20 bg-card/60 backdrop-blur-md rounded-2xl border border-border shadow-xl"
+          >
             <Receipt className="w-14 h-14 text-gray-600 mb-4" />
             <h3 className="text-lg font-bold text-foreground">No invoices yet</h3>
             <p className="text-muted-foreground text-sm mt-1 mb-6 text-center max-w-sm">
@@ -314,12 +366,22 @@ export default function Billing() {
               {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
               Generate Invoice
             </button>
-          </div>
+          </motion.div>
         )}
 
-        <div className="space-y-4">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="space-y-4"
+        >
           {bills.map(bill => (
-            <div key={bill.id} className="bg-card border border-border rounded-2xl overflow-hidden hover:border-indigo-500/20 transition-all">
+            <motion.div 
+              key={bill.id} 
+              variants={itemVariants}
+              whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
+              className="bg-card/60 backdrop-blur-md border border-border rounded-2xl overflow-hidden hover:border-indigo-500/30 transition-all shadow-lg"
+            >
               {/* Invoice header */}
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 p-6">
                 <div>
@@ -329,8 +391,8 @@ export default function Billing() {
                     </h3>
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
                       bill.status === 'paid'
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                     }`}>
                       {bill.status === 'paid' ? '✓ PAID' : '⏳ PENDING'}
                     </span>
@@ -350,23 +412,27 @@ export default function Billing() {
                     <p className="text-2xl font-extrabold text-foreground">₹{bill.totalAmount.toFixed(2)}</p>
                   </div>
                   <div className="flex gap-2">
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                       onClick={() => printInvoice(bill)}
-                      className="p-2.5 rounded-xl border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      className="p-2.5 rounded-xl border border-border/50 bg-background/50 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                       title="Download / Print Invoice"
                     >
                       <Download className="w-4 h-4" />
-                    </button>
+                    </motion.button>
                     {bill.status === 'pending' && (
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => setPayTarget(bill)}
-                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-colors shadow-lg shadow-indigo-500/20"
+                        className="px-4 py-2 rounded-xl bg-indigo-600/90 hover:bg-indigo-500 text-white text-sm font-semibold transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] border border-indigo-500/50 backdrop-blur-sm"
                       >
                         Pay Now
-                      </button>
+                      </motion.button>
                     )}
                     {bill.status === 'paid' && (
-                      <div className="px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-sm font-semibold flex items-center gap-1.5 border border-emerald-500/20">
+                      <div className="px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-sm font-semibold flex items-center gap-1.5 border border-emerald-500/20 backdrop-blur-sm">
                         <CheckCircle className="w-4 h-4" />
                         Paid
                       </div>
@@ -376,7 +442,7 @@ export default function Billing() {
               </div>
 
               {/* Invoice line items */}
-              <div className="border-t border-border px-6 py-4">
+              <div className="border-t border-border/50 px-6 py-4 bg-muted/10">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-xs text-muted-foreground uppercase tracking-wider">
@@ -386,12 +452,12 @@ export default function Billing() {
                   </thead>
                   <tbody>
                     {bill.billItems.map(item => (
-                      <tr key={item.id} className="border-t border-border/50">
+                      <tr key={item.id} className="border-t border-border/30">
                         <td className="py-2.5 text-foreground pr-4">{item.description}</td>
                         <td className="py-2.5 text-right font-semibold text-foreground">₹{item.amount.toFixed(2)}</td>
                       </tr>
                     ))}
-                    <tr className="border-t border-border">
+                    <tr className="border-t border-border/50">
                       <td className="pt-3 pb-1 text-muted-foreground">Subtotal</td>
                       <td className="pt-3 pb-1 text-right text-muted-foreground">₹{(bill.totalAmount - bill.taxes).toFixed(2)}</td>
                     </tr>
@@ -399,27 +465,29 @@ export default function Billing() {
                       <td className="pb-1 text-muted-foreground text-xs">GST / Tax (18%)</td>
                       <td className="pb-1 text-right text-muted-foreground text-xs">₹{bill.taxes.toFixed(2)}</td>
                     </tr>
-                    <tr className="border-t-2 border-border">
+                    <tr className="border-t-2 border-border/50">
                       <td className="pt-3 font-bold text-foreground text-base">Total</td>
                       <td className="pt-3 text-right font-extrabold text-indigo-400 text-lg">₹{bill.totalAmount.toFixed(2)}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Pay Modal */}
-      {payTarget && (
-        <PayModal
-          bill={payTarget}
-          token={user.token}
-          onClose={() => setPayTarget(null)}
-          onPaid={fetchBills}
-        />
-      )}
-    </div>
+      <AnimatePresence>
+        {payTarget && (
+          <PayModal
+            bill={payTarget}
+            token={user.token}
+            onClose={() => setPayTarget(null)}
+            onPaid={fetchBills}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

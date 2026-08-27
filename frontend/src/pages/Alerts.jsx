@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 import { Bell, AlertTriangle, Info, CheckCircle2, ShieldAlert, Check, Trash2, Filter } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Alerts() {
   const { user }                      = useAuth();
@@ -10,7 +12,6 @@ export default function Alerts() {
   const [loading, setLoading]         = useState(true);
   const [filterSeverity, setFilter]   = useState('all');
 
-  // Initial mock + live alerts feed
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
@@ -18,16 +19,7 @@ export default function Alerts() {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         const liveAlerts = res.data?.alerts || [];
-        // Combine with system monitoring defaults if empty
-        if (liveAlerts.length === 0) {
-          setAlerts([
-            { id: '1', title: 'High CPU Utilization on ap-south-1a', message: 'Spike detected above 85% threshold for 5 consecutive minutes.', severity: 'high', status: 'unread', createdAt: new Date() },
-            { id: '2', title: 'Scheduled Database Backup Completed', message: 'Automated snapshot for postgres-small completed successfully.', severity: 'low', status: 'read', createdAt: new Date(Date.now() - 3600000) },
-            { id: '3', title: 'Storage Usage Warning (block-store-1tb)', message: 'Storage capacity reached 78% limit. Consider scaling up.', severity: 'medium', status: 'unread', createdAt: new Date(Date.now() - 7200000) }
-          ]);
-        } else {
-          setAlerts(liveAlerts);
-        }
+        setAlerts(liveAlerts);
       } catch (err) {
         console.error(err);
       } finally {
@@ -91,7 +83,7 @@ export default function Alerts() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
             <span className="p-2 rounded-xl bg-rose-500/10">
@@ -104,17 +96,19 @@ export default function Alerts() {
           </p>
         </div>
         {unreadCount > 0 && (
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={markAllRead}
             className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
           >
             <Check className="w-4 h-4" /> Mark All as Read ({unreadCount})
-          </button>
+          </motion.button>
         )}
-      </div>
+      </motion.div>
 
       {/* Severity Filter Controls */}
-      <div className="flex items-center justify-between bg-card border border-border rounded-2xl px-6 py-3">
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex items-center justify-between bg-card border border-border rounded-2xl px-6 py-3 shadow-sm">
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-semibold text-foreground">Filter by Severity:</span>
@@ -134,24 +128,40 @@ export default function Alerts() {
             </button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Alerts Feed */}
-      <div className="space-y-3">
+      <motion.div 
+        className="space-y-3"
+        variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } }}
+        initial="hidden"
+        animate="show"
+      >
+        <AnimatePresence mode="popLayout">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-card rounded-2xl border border-border">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="flex flex-col items-center justify-center py-20 bg-card rounded-2xl border border-border"
+          >
             <CheckCircle2 className="w-12 h-12 text-emerald-400 mb-3" />
             <h3 className="text-lg font-bold text-foreground">No alerts matching filter</h3>
             <p className="text-sm text-muted-foreground mt-1">Your infrastructure cluster is running smoothly.</p>
-          </div>
+          </motion.div>
         ) : (
           filtered.map(alert => (
-            <div
+            <motion.div
+              layout
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9, x: -20 }}
+              transition={{ duration: 0.2 }}
               key={alert.id}
-              className={`bg-card border rounded-2xl p-5 transition-all flex flex-col sm:flex-row justify-between sm:items-center gap-4 ${
+              className={`bg-card border rounded-2xl p-5 transition-all flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm hover:shadow-md ${
                 alert.status === 'unread'
-                  ? 'border-rose-500/30 bg-rose-500/5 shadow-sm'
-                  : 'border-border opacity-75'
+                  ? 'border-rose-500/30 bg-rose-500/5'
+                  : 'border-border opacity-75 hover:opacity-100'
               }`}
             >
               <div className="flex items-start gap-4">
@@ -193,10 +203,11 @@ export default function Alerts() {
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-            </div>
+            </motion.div>
           ))
         )}
-      </div>
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

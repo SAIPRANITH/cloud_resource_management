@@ -3,6 +3,33 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 import { Server, Cpu, Database, HardDrive, Plus, X, Loader2, AlertCircle, Trash2 } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from 'framer-motion';
+
+const modalVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: 20 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', damping: 25, stiffness: 300 } },
+  exit: { opacity: 0, scale: 0.95, y: 20, transition: { duration: 0.2 } }
+};
+
+const overlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  exit: { opacity: 0 }
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const rowVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 }
+};
 
 function ProvisionModal({ onClose, onProvisioned, token }) {
   const [name, setName]         = useState('');
@@ -43,14 +70,21 @@ function ProvisionModal({ onClose, onProvisioned, token }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#111827] border border-white/10 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+    <motion.div 
+      className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4"
+      variants={overlayVariants}
+      initial="hidden" animate="visible" exit="exit"
+    >
+      <motion.div 
+        className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden"
+        variants={modalVariants}
+      >
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5">
           <div>
             <h2 className="text-lg font-bold text-white">Provision New Resource</h2>
             <p className="text-sm text-gray-400 mt-0.5">Add infrastructure to the available cloud pool</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:bg-white/10 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -63,7 +97,7 @@ function ProvisionModal({ onClose, onProvisioned, token }) {
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. app-node-us-east"
-              className="w-full px-3.5 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3.5 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
             />
           </div>
 
@@ -73,7 +107,7 @@ function ProvisionModal({ onClose, onProvisioned, token }) {
               <select
                 value={type}
                 onChange={e => setType(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[#1f2937] border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 rounded-lg bg-[#1f2937]/80 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               >
                 <option value="VM">VM (Compute)</option>
                 <option value="Database">Database</option>
@@ -87,7 +121,7 @@ function ProvisionModal({ onClose, onProvisioned, token }) {
               <select
                 value={region}
                 onChange={e => setRegion(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[#1f2937] border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 rounded-lg bg-[#1f2937]/80 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               >
                 <option value="us-east-1">us-east-1 (N. Virginia)</option>
                 <option value="us-west-2">us-west-2 (Oregon)</option>
@@ -106,7 +140,7 @@ function ProvisionModal({ onClose, onProvisioned, token }) {
                 disabled={type === 'Storage' || type === 'LoadBalancer'}
                 value={cpu}
                 onChange={e => setCpu(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-30"
+                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-30 transition-all"
               />
             </div>
             <div>
@@ -116,7 +150,7 @@ function ProvisionModal({ onClose, onProvisioned, token }) {
                 disabled={type === 'Storage' || type === 'LoadBalancer'}
                 value={ram}
                 onChange={e => setRam(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-30"
+                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-30 transition-all"
               />
             </div>
             <div>
@@ -126,7 +160,7 @@ function ProvisionModal({ onClose, onProvisioned, token }) {
                 disabled={type === 'LoadBalancer'}
                 value={disk}
                 onChange={e => setDisk(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-30"
+                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-30 transition-all"
               />
             </div>
           </div>
@@ -139,33 +173,33 @@ function ProvisionModal({ onClose, onProvisioned, token }) {
               required
               value={baseCost}
               onChange={e => setBaseCost(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3.5 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
             />
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg px-3 py-2 text-sm">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 bg-rose-500/20 border border-rose-500/30 text-rose-400 rounded-lg px-3 py-2 text-sm">
               <AlertCircle className="w-4 h-4 shrink-0" />
               {error}
-            </div>
+            </motion.div>
           )}
 
           <div className="flex justify-end gap-3 pt-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-white/10 text-gray-300 hover:bg-white/5 text-sm font-medium">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-white/10 text-gray-300 hover:bg-white/10 text-sm font-medium transition-colors">
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving || !name.trim()}
-              className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2"
+              className="px-5 py-2 rounded-lg bg-indigo-600/90 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold flex items-center gap-2 transition-all shadow-lg shadow-indigo-500/20 border border-white/10"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               {saving ? 'Provisioning...' : 'Provision Resource'}
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -220,28 +254,35 @@ export default function Resources() {
   };
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
-          <span className="p-2 rounded-xl bg-indigo-500/10">
+          <span className="p-2 rounded-xl bg-indigo-500/20 border border-indigo-500/30 backdrop-blur-sm">
             <Server className="w-7 h-7 text-indigo-400" />
           </span>
           Infrastructure Pool
         </h1>
         {isAdmin && (
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setShowProvision(true)}
-            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm flex items-center gap-2 transition-all shadow-lg shadow-indigo-500/20"
+            className="px-4 py-2.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-500 text-white font-semibold text-sm flex items-center gap-2 transition-all shadow-lg shadow-indigo-500/20 border border-white/10"
           >
             <Plus className="w-4 h-4" /> Provision Resource
-          </button>
+          </motion.button>
         )}
       </div>
 
-      <div className="bg-card rounded-2xl border border-border overflow-hidden">
+      <div className="bg-card/40 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
+            <thead className="text-xs text-muted-foreground uppercase bg-white/5 border-b border-white/10">
               <tr>
                 <th className="px-6 py-4 font-medium">Resource Name</th>
                 <th className="px-6 py-4 font-medium">Type</th>
@@ -252,15 +293,25 @@ export default function Resources() {
                 {isAdmin && <th className="px-6 py-4 font-medium text-right">Actions</th>}
               </tr>
             </thead>
-            <tbody>
+            <motion.tbody 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
               {resources.map((res) => (
-                <tr key={res.id} className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
+                <motion.tr 
+                  key={res.id} 
+                  variants={rowVariants}
+                  className="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors"
+                >
                   <td className="px-6 py-4 font-medium text-foreground flex items-center gap-3">
-                    {getIcon(res.type)}
+                    <div className="p-1.5 rounded-lg bg-black/30 shadow-inner">
+                      {getIcon(res.type)}
+                    </div>
                     {res.name}
                   </td>
                   <td className="px-6 py-4">
-                    <span className="bg-secondary text-secondary-foreground px-2.5 py-0.5 rounded text-xs font-semibold">{res.type}</span>
+                    <span className="bg-white/10 text-gray-300 border border-white/10 px-2.5 py-1 rounded-md text-xs font-semibold backdrop-blur-sm">{res.type}</span>
                   </td>
                   <td className="px-6 py-4">{res.region}</td>
                   <td className="px-6 py-4 text-muted-foreground">
@@ -268,10 +319,10 @@ export default function Resources() {
                     {res.ram && `• ${res.ram}GB RAM `} 
                     {res.disk && `• ${res.disk}GB SSD`}
                   </td>
-                  <td className="px-6 py-4 font-medium">₹{res.baseCost.toFixed(2)}/mo</td>
+                  <td className="px-6 py-4 font-medium text-emerald-400 drop-shadow-sm">₹{res.baseCost.toFixed(2)}/mo</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <div className={`h-2.5 w-2.5 rounded-full mr-2 ${res.status === 'running' ? 'bg-emerald-500' : 'bg-muted-foreground'}`}></div>
+                      <div className={`h-2.5 w-2.5 rounded-full mr-2 shadow-sm ${res.status === 'running' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-muted-foreground'}`}></div>
                       <span className="capitalize">{res.status}</span>
                     </div>
                   </td>
@@ -279,14 +330,14 @@ export default function Resources() {
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleDeleteResource(res.id)}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:bg-rose-500/20 hover:text-rose-400 transition-colors"
                         title="Remove resource"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   )}
-                </tr>
+                </motion.tr>
               ))}
               {resources.length === 0 && (
                 <tr>
@@ -295,18 +346,20 @@ export default function Resources() {
                   </td>
                 </tr>
               )}
-            </tbody>
+            </motion.tbody>
           </table>
         </div>
       </div>
 
-      {showProvision && (
-        <ProvisionModal
-          token={user.token}
-          onClose={() => setShowProvision(false)}
-          onProvisioned={fetchResources}
-        />
-      )}
-    </div>
+      <AnimatePresence>
+        {showProvision && (
+          <ProvisionModal
+            token={user.token}
+            onClose={() => setShowProvision(false)}
+            onProvisioned={fetchResources}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

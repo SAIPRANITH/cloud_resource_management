@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { LayoutDashboard, Folder, Server, CreditCard, Bell, Activity, BarChart3, Cloud, ShieldCheck } from 'lucide-react';
 import { cn } from '../../utils';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
 const userLinks = [
