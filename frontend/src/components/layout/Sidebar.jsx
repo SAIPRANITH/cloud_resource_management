@@ -17,7 +17,6 @@ const userLinks = [
 const adminLinks = [
   { name: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
   { name: 'Admin Panel', to: '/admin', icon: BarChart3 },
-  { name: 'Projects', to: '/projects', icon: Folder },
   { name: 'Resources', to: '/resources', icon: Server },
   { name: 'Billing', to: '/billing', icon: CreditCard },
 ];
@@ -25,7 +24,7 @@ const adminLinks = [
 export default function Sidebar() {
   const { user, logout } = useAuth();
   
-  const links = user?.role === 'admin' ? adminLinks : userLinks;
+  const links = user?.roles?.includes('Admin') ? adminLinks : userLinks;
 
   return (
     <aside className="w-64 border-r border-border bg-card flex flex-col h-full z-10 relative">
@@ -91,11 +90,11 @@ export default function Sidebar() {
                 {user?.name || 'User'}
               </span>
               <div className="flex items-center gap-1.5">
-                {user?.role === 'admin' && (
+                {user?.roles?.includes('Admin') && (
                   <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
                 )}
                 <span className="text-xs text-muted-foreground capitalize">
-                  {user?.role || 'User'}
+                  {user?.roles?.[0] || 'User'}
                 </span>
               </div>
             </div>

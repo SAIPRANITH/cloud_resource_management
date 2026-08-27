@@ -282,6 +282,7 @@ function CreateProjectModal({ onClose, onCreate }) {
 /* ─── Main Page ─── */
 export default function Projects() {
   const { user }                          = useAuth();
+  const isAdmin                           = user?.roles?.includes('Admin');
   const [projects, setProjects]           = useState([]);
   const [loading, setLoading]             = useState(true);
   const [showCreate, setShowCreate]       = useState(false);
@@ -388,13 +389,15 @@ export default function Projects() {
             {generatingInvoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
             {generatingInvoice ? 'Generating...' : 'Generate Invoice'}
           </button>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="px-4 py-2 rounded-lg bg-indigo-600/90 hover:bg-indigo-500 text-white font-semibold text-sm transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20 border border-white/10"
-          >
-            <Plus className="w-4 h-4" />
-            New Project
-          </button>
+          {!isAdmin && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="px-4 py-2 rounded-lg bg-indigo-600/90 hover:bg-indigo-500 text-white font-semibold text-sm transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20 border border-white/10"
+            >
+              <Plus className="w-4 h-4" />
+              Create Project
+            </button>
+          )}
         </div>
       </motion.div>
 
@@ -425,9 +428,11 @@ export default function Projects() {
           <FolderGit2 className="w-16 h-16 text-gray-500 mb-4 drop-shadow-md" />
           <h3 className="text-lg font-bold text-foreground">No projects yet</h3>
           <p className="text-muted-foreground text-sm mt-1 mb-6">Create your first cloud project to get started.</p>
-          <button onClick={() => setShowCreate(true)} className="px-5 py-2.5 rounded-lg bg-indigo-600/90 hover:bg-indigo-500 text-white font-semibold text-sm flex items-center gap-2 transition-all shadow-lg shadow-indigo-500/20 border border-white/10">
-            <Plus className="w-4 h-4" /> Create Project
-          </button>
+          {!isAdmin && (
+            <button onClick={() => setShowCreate(true)} className="px-5 py-2.5 rounded-lg bg-indigo-600/90 hover:bg-indigo-500 text-white font-semibold text-sm flex items-center gap-2 transition-all shadow-lg shadow-indigo-500/20 border border-white/10">
+              <Plus className="w-4 h-4" /> Create Project
+            </button>
+          )}
         </motion.div>
       )}
 
